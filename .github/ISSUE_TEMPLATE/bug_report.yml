@@ -1,0 +1,28 @@
+name: Bug report
+description: Something NoEmulator does wrong, or a detector still flags.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Export your logs first: open NoEmulator in the KernelSU-Next manager and tap **Action** on its card, or use **Export for a bug report** on the WebUI's Log page. Both save `noemulator-logs-<date>.txt` in your Download folder, with the host timezone, the ADB key and serial numbers removed. Read it before attaching it.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead. For a detector, name the app, its version, and the exact finding.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log export
+      description: Drag the noemulator-logs file here.
+    validations:
+      required: true
+  - type: input
+    id: emulator
+    attributes:
+      label: Emulator image
+      description: For example "Android 16 Google APIs x86_64, Pixel 9 AVD".
+    validations:
+      required: true

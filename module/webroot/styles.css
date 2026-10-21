@@ -1,0 +1,349 @@
+/* Material 3 styling, written for this page. No framework and no font: the page
+   is opened from the KernelSU manager on a device that may have no network, so
+   everything it needs ships with it.
+
+   /internal/insets.css is served by the manager's WebView and defines the window
+   insets. It is optional: outside the manager the import fails and the fallbacks
+   below apply. */
+@import "/internal/insets.css";
+
+/* The whole palette is derived from one fixed amber seed. The device's Material
+   You colour is deliberately not used: the page keeps one identity everywhere. */
+:root {
+    color-scheme: light dark;
+    --seed: #f29900;
+
+    --md-primary: color-mix(in srgb, var(--seed) 72%, black);
+    --md-on-primary: #ffffff;
+    --md-primary-container: color-mix(in srgb, var(--seed) 22%, white);
+    --md-on-primary-container: color-mix(in srgb, var(--seed) 40%, black);
+    --md-surface: color-mix(in srgb, var(--seed) 3%, #fefbff);
+    --md-surface-container: color-mix(in srgb, var(--seed) 8%, #fefbff);
+    --md-surface-container-high: color-mix(in srgb, var(--seed) 12%, #fefbff);
+    --md-on-surface: #1c1b1f;
+    --md-on-surface-variant: #49454f;
+    --md-outline: #79747e;
+    --md-warning-container: #fdf0d5;
+    --md-on-warning-container: #5b4300;
+    --md-error: #b3261e;
+
+    --corner-outer: 20px;
+    --corner-inner: 4px;
+    --nav-height: 80px;
+    --inset-top: var(--window-inset-top, env(safe-area-inset-top, 0px));
+    --inset-bottom: var(--window-inset-bottom, env(safe-area-inset-bottom, 0px));
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --md-primary: color-mix(in srgb, var(--seed) 55%, white);
+        --md-on-primary: color-mix(in srgb, var(--seed) 35%, black);
+        --md-primary-container: color-mix(in srgb, var(--seed) 45%, black);
+        --md-on-primary-container: color-mix(in srgb, var(--seed) 20%, white);
+        --md-surface: color-mix(in srgb, var(--seed) 4%, #141218);
+        --md-surface-container: color-mix(in srgb, var(--seed) 8%, #1d1b20);
+        --md-surface-container-high: color-mix(in srgb, var(--seed) 12%, #232129);
+        --md-on-surface: #e6e1e5;
+        --md-on-surface-variant: #cac4d0;
+        --md-outline: #938f99;
+        --md-warning-container: #3d2f05;
+        --md-on-warning-container: #f3dc9c;
+        --md-error: #f2b8b5;
+    }
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; background: var(--md-surface); color: var(--md-on-surface); }
+
+body {
+    font: 15px/1.5 system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+main {
+    padding: calc(var(--inset-top) + 24px) 16px calc(var(--nav-height) + var(--inset-bottom) + 24px);
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+.page-title { margin: 8px 4px 4px; font-size: 32px; font-weight: 400; }
+.page-subtitle { margin: 0 4px 16px; color: var(--md-on-surface-variant); font-size: 14px; }
+
+.icon { display: inline-flex; width: 24px; height: 24px; flex: none; }
+.icon svg { width: 100%; height: 100%; fill: currentColor; }
+
+code { font-family: ui-monospace, monospace; font-size: 0.92em; }
+
+/* --- status card ------------------------------------------------------- */
+.status-card {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin: 16px 0 8px;
+    padding: 20px;
+    border-radius: 28px;
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+.status-card .icon { width: 40px; height: 40px; }
+.status-card h2 { margin: 0; font-size: 20px; font-weight: 500; }
+.status-card p { margin: 2px 0 0; font-size: 14px; opacity: 0.85; }
+.status-card[data-state="warn"] {
+    background: var(--md-warning-container);
+    color: var(--md-on-warning-container);
+}
+
+/* --- segmented groups: outer corners round, inner corners tight --------- */
+.group-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 4px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-primary);
+}
+
+.group { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 56px;
+    padding: 12px 16px;
+    background: var(--md-surface-container);
+    border-radius: var(--corner-inner);
+}
+.group > .row:first-child, .group > li:first-child { border-top-left-radius: var(--corner-outer); border-top-right-radius: var(--corner-outer); }
+.group > .row:last-child, .group > li:last-child { border-bottom-left-radius: var(--corner-outer); border-bottom-right-radius: var(--corner-outer); }
+.row.compact { min-height: 0; margin-top: 8px; border-radius: var(--corner-outer); }
+
+.row .label { flex: 1; color: var(--md-on-surface-variant); font-size: 14px; }
+.row .value { font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+.row .value.bad { color: var(--md-error); }
+
+.row.text { display: block; }
+.row.text p { margin: 0 0 10px; font-size: 14px; color: var(--md-on-surface-variant); }
+.row.text p:last-child { margin-bottom: 0; }
+
+.caveat {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--md-warning-container);
+    color: var(--md-on-warning-container) !important;
+}
+
+/* --- switch ------------------------------------------------------------ */
+.switch-row { cursor: pointer; }
+.switch-row > span:first-child { flex: 1; min-width: 0; }
+.switch-row strong { display: block; font-weight: 500; }
+.switch-row small { display: block; margin-top: 2px; color: var(--md-on-surface-variant); font-size: 13px; }
+.switch-row .reboot-note { margin-top: 6px; color: var(--md-primary); font-weight: 500; }
+.switch-row .reboot-note[hidden] { display: none; }
+
+.switch {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: none;
+    position: relative;
+    width: 52px;
+    height: 32px;
+    margin: 0;
+    border: 2px solid var(--md-outline);
+    border-radius: 16px;
+    background: var(--md-surface-container-high);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.switch::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--md-outline);
+    transition: transform 0.15s, width 0.15s, height 0.15s, top 0.15s, background 0.15s;
+}
+.switch:checked { background: var(--md-primary); border-color: var(--md-primary); }
+.switch:checked::after {
+    top: 2px;
+    width: 24px;
+    height: 24px;
+    background: var(--md-on-primary);
+    transform: translateX(18px);
+}
+.switch:disabled { opacity: 0.38; cursor: default; }
+
+/* --- search and the package list ---------------------------------------- */
+.search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 0 16px;
+    height: 56px;
+    border-radius: 28px;
+    background: var(--md-surface-container-high);
+    color: var(--md-on-surface-variant);
+}
+.search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--md-on-surface);
+    font: inherit;
+}
+
+/* The height is reserved, not fitted, so the list below never moves when a
+   message appears or clears. Found by testing: arming the adopt confirm grew
+   this line from zero to three, the rows slid up, and the next tap landed on a
+   different package than the one under the finger a moment earlier. Three lines
+   is the longest message the page produces, and at a line-height of 1.5 three
+   lines is 4.5em. */
+.status-line {
+    margin: 12px 4px;
+    font-size: 13px;
+    color: var(--md-on-surface-variant);
+    min-height: 4.5em;
+}
+
+.list li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 56px; background: var(--md-surface-container); border-radius: var(--corner-inner); }
+.list .name { flex: 1; min-width: 0; font-family: ui-monospace, monospace; font-size: 13px; overflow-wrap: anywhere; }
+.list .tag { display: table; margin-top: 6px; font-family: system-ui, sans-serif; font-size: 11px; color: var(--md-on-surface-variant); border: 1px solid var(--md-outline); border-radius: 8px; padding: 2px 8px; white-space: nowrap; }
+
+.list button {
+    flex: none;
+    min-width: 88px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--md-outline);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--md-primary);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.list button[data-on="yes"] { border-color: var(--md-primary); background: var(--md-primary); color: var(--md-on-primary); }
+
+/* Armed adopt reads as a warning, not a confirmation of something good: the
+   tap after it changes what uninstall will do. */
+.list button[data-armed="yes"] {
+    border-color: var(--md-on-warning-container);
+    background: var(--md-warning-container);
+    color: var(--md-on-warning-container);
+}
+.list button:disabled { opacity: 0.38; cursor: default; }
+
+/* --- links and buttons that are whole rows ------------------------------ */
+.link-row {
+    width: 100%;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+.link-row .value { color: var(--md-primary); }
+.link-row strong { display: block; font-weight: 500; }
+.link-row small { display: block; margin-top: 2px; color: var(--md-on-surface-variant); font-size: 13px; }
+.action-group { margin-top: 16px; }
+.action-group > .row { border-radius: var(--corner-outer); }
+
+a.ref { color: var(--md-primary); font-weight: 500; font-size: 14px; }
+
+.back {
+    margin: 0 0 4px;
+    padding: 8px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--md-primary);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.status-line.short { min-height: 1.5em; }
+
+/* --- the log ------------------------------------------------------------- */
+.log {
+    margin: 0;
+    padding: 16px;
+    border-radius: var(--corner-outer);
+    background: var(--md-surface-container);
+    font: 12px/1.5 ui-monospace, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.log .failed { color: var(--md-error); font-weight: 600; }
+.log-lines li { font: 12px/1.5 ui-monospace, monospace; color: var(--md-error); overflow-wrap: anywhere; min-height: 0; }
+
+/* --- reboot ---------------------------------------------------------------- */
+.reboot-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 48px;
+    margin-top: 16px;
+    border: 0;
+    border-radius: 24px;
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+.reboot-button[hidden] { display: none; }
+.reboot-button[data-armed="yes"] {
+    background: var(--md-warning-container);
+    color: var(--md-on-warning-container);
+}
+
+/* --- bottom navigation --------------------------------------------------- */
+.bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    height: calc(var(--nav-height) + var(--inset-bottom));
+    padding-bottom: var(--inset-bottom);
+    background: var(--md-surface-container);
+}
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    background: transparent;
+    color: var(--md-on-surface-variant);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.nav-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 32px;
+    border-radius: 16px;
+    transition: background 0.15s;
+}
+.nav-item.active { color: var(--md-on-surface); }
+.nav-item.active .nav-pill { background: var(--md-primary-container); color: var(--md-on-primary-container); }

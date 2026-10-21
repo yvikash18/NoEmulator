@@ -1,0 +1,31 @@
+# The required check. Everything in here runs without a device and without a
+# model: the rule generator's test suite, and shellcheck over every shell file
+# that ships or tests what ships.
+#
+# The three guard skills (clean-code-guard, test-guard, docs-guard) are not here
+# and cannot be. They are model-driven and would need an API key and a per-PR
+# token cost. AGENTS.md section 5 keeps them a manual step before the PR.
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # dash, not bash: the module runs under KernelSU's busybox ash on the
+      # device, and a bashism that works in the runner's /bin/sh would not be
+      # caught here.
+      - name: Install dash and shellcheck
+        run: sudo apt-get update && sudo apt-get install -y dash shellcheck
+
+      - name: Rule generator suite
+        run: dash tests/test_generate_rules.sh
+
+      - name: Shellcheck
+        run: shellcheck -S warning module/*.sh module/lib/*.sh tests/*.sh scripts/*.sh

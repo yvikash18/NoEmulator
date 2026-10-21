@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>NoEmulator</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section id="view-home" class="view active" aria-labelledby="home-title">
+    <h1 id="home-title" class="page-title">NoEmulator</h1>
+
+    <div class="status-card" id="status-card" data-state="unknown">
+      <span class="icon" data-icon="check_circle" id="status-icon"></span>
+      <div>
+        <h2 id="status-title">Checking...</h2>
+        <p id="status-detail"></p>
+      </div>
+    </div>
+
+    <h3 class="group-label">Module</h3>
+    <div class="group" id="home-module"></div>
+
+    <h3 class="group-label">Last boot</h3>
+    <div class="group" id="home-boot"></div>
+
+    <div id="home-problems" hidden>
+      <h3 class="group-label">Failed rules</h3>
+      <ul class="group list log-lines" id="home-failures"></ul>
+    </div>
+
+    <div class="group action-group">
+      <button type="button" class="row link-row" data-open-view="view-log">
+        <span class="icon" data-icon="description"></span>
+        <span class="label">View the full log</span>
+      </button>
+    </div>
+  </section>
+
+  <section id="view-log" class="view" aria-labelledby="log-title">
+    <button type="button" class="back" data-open-view="view-home">&larr; Home</button>
+    <h1 id="log-title" class="page-title">Log</h1>
+    <p class="page-subtitle">The last boot's <code>apply.log</code>. Failed rules are marked.</p>
+
+    <div class="group action-group">
+      <button type="button" class="row link-row" id="export-logs">
+        <span class="icon" data-icon="description"></span>
+        <span>
+          <strong>Export for a bug report</strong>
+          <small>Saves a report to Download, with the host timezone, the ADB key and serial numbers removed.</small>
+        </span>
+      </button>
+    </div>
+    <p id="log-status" class="status-line short" role="status"></p>
+
+    <pre class="log" id="log-text">Loading...</pre>
+  </section>
+
+  <section id="view-angle" class="view" aria-labelledby="angle-title">
+    <h1 id="angle-title" class="page-title">ANGLE</h1>
+    <p class="page-subtitle" id="angle-subtitle">Loading...</p>
+
+    <div class="group">
+      <div class="row text">
+        <p>
+          Apps ask the GPU driver what it is. On this device it answers with the
+          emulator's name. ANGLE replaces that answer.
+        </p>
+        <p class="caveat">
+          ANGLE is a real translation layer, not a label. It substitutes
+          <code>llvmpipe</code>, and <code>GL_SHADING_LANGUAGE_VERSION</code> still
+          carries an ANGLE git hash. An app on ANGLE can be told it is on ANGLE.
+        </p>
+        <p>
+          <a class="ref" href="#" data-url="https://github.com/ymuuuu/NoEmulator#the-angle-list-from-the-phone">How the ANGLE list works</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="search">
+      <span class="icon" data-icon="search"></span>
+      <input type="search" id="filter" placeholder="Filter packages" autocomplete="off" spellcheck="false">
+    </div>
+    <label class="row switch-row compact">
+      <span>Show system packages</span>
+      <input type="checkbox" class="switch" id="show-system">
+    </label>
+    <p id="angle-status" class="status-line" role="status"></p>
+    <ul id="packages" class="group list"></ul>
+  </section>
+
+  <section id="view-options" class="view" aria-labelledby="options-title">
+    <h1 id="options-title" class="page-title">Options</h1>
+
+    <h3 class="group-label">Compatibility</h3>
+    <div class="group">
+      <label class="row switch-row">
+        <span>
+          <strong>Run ARM apps</strong>
+          <small>
+            Keeps the ARM translator, so apps that ship only ARM code can run. Every
+            app can then see that this device translates ARM code: the
+            <code>ro.dalvik.vm.native.bridge</code> property, and
+            <code>libndk_translation.so</code> in its memory map. Takes effect after a
+            reboot.
+          </small>
+          <small class="reboot-note" id="arm-reboot" hidden>Reboot to apply</small>
+        </span>
+        <input type="checkbox" class="switch" id="arm-switch" disabled>
+      </label>
+      <label class="row switch-row">
+        <span>
+          <strong>Sync the host clipboard</strong>
+          <small>
+            Keeps <code>ro.boot.qemu</code>, so copy and paste works between your
+            computer and the emulator. Every app can then see that this device is an
+            emulator: the property itself, and <code>Build.IS_EMULATOR</code> reading
+            true. Takes effect after a reboot.
+          </small>
+          <small class="reboot-note" id="clipboard-reboot" hidden>Reboot to apply</small>
+        </span>
+        <input type="checkbox" class="switch" id="clipboard-switch" disabled>
+      </label>
+    </div>
+
+    <button type="button" class="reboot-button" id="reboot-button" hidden>
+      <span class="icon" data-icon="restart_alt"></span><span id="reboot-label">Reboot now</span>
+    </button>
+
+    <p id="options-status" class="status-line" role="status"></p>
+  </section>
+
+  <section id="view-about" class="view" aria-labelledby="about-title">
+    <h1 id="about-title" class="page-title">About</h1>
+    <p class="page-subtitle">NoEmulator, by ymuu.</p>
+
+    <h3 class="group-label">Version</h3>
+    <div class="group" id="about-version"></div>
+
+    <h3 class="group-label">Author</h3>
+    <div class="group">
+      <a class="row link-row" href="#" data-url="https://github.com/ymuuuu"><span class="label">GitHub</span><span class="value">ymuuuu</span></a>
+      <a class="row link-row" href="#" data-url="https://t.me/ymuulabs"><span class="label">Telegram</span><span class="value">ymuulabs</span></a>
+      <a class="row link-row" href="#" data-url="https://ymuu.me"><span class="label">Blog</span><span class="value">ymuu.me</span></a>
+      <a class="row link-row" href="#" data-url="https://paypal.me/ymuu"><span class="label">Support the work</span><span class="value">PayPal</span></a>
+    </div>
+
+    <h3 class="group-label">Project</h3>
+    <div class="group">
+      <a class="row link-row" href="#" data-url="https://github.com/ymuuuu/NoEmulator"><span class="label">Source and README</span><span class="value">GitHub</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/ymuuuu/NoEmulator/issues/new/choose"><span class="label">Report a problem</span><span class="value">Issues</span></a>
+    </div>
+
+    <h3 class="group-label">Credits</h3>
+    <div class="group">
+      <a class="row link-row" href="#" data-url="https://gitlab.com/simonpunk/susfs4ksu"><span class="label">susfs4ksu</span><span class="value">simonpunk</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/inforcqb/susfs4ksu-lkm"><span class="label">susfs4ksu-lkm</span><span class="value">inforcqb</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/ymuuuu/susfs4ksu-lkm-x64"><span class="label">susfs4ksu-lkm-x64</span><span class="value">ymuu</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/KernelSU-Next/KernelSU-Next"><span class="label">KernelSU-Next</span><span class="value">rifsxd</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/maxsteeel/nomount"><span class="label">NoMount</span><span class="value">maxsteeel</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/eltavine/Duck-Detector-Refactoring"><span class="label">Duck Detector</span><span class="value">eltavine</span></a>
+      <a class="row link-row" href="#" data-url="https://github.com/VD171/VD-Infos"><span class="label">vdinfos</span><span class="value">VD171</span></a>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav" aria-label="Pages">
+  <button type="button" class="nav-item active" data-view="view-home">
+    <span class="nav-pill"><span class="icon" data-icon="home"></span></span>Home
+  </button>
+  <button type="button" class="nav-item" data-view="view-angle">
+    <span class="nav-pill"><span class="icon" data-icon="memory"></span></span>ANGLE
+  </button>
+  <button type="button" class="nav-item" data-view="view-options">
+    <span class="nav-pill"><span class="icon" data-icon="settings"></span></span>Options
+  </button>
+  <button type="button" class="nav-item" data-view="view-about">
+    <span class="nav-pill"><span class="icon" data-icon="info"></span></span>About
+  </button>
+</nav>
+
+<script src="icons.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

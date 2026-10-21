@@ -1,0 +1,48 @@
+# Build the flashable zip for a version tag and publish it as a GitHub release.
+#
+# update.json's zipUrl names the asset this uploads, so the KernelSU manager's
+# update button downloads exactly what was tested here. The tag must match
+# module.prop's version; a mismatch would publish a zip the manager reports as a
+# different version from the one it offered. The release notes are the tag's
+# section of changelog.md, and a tag with no section fails the release.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install dash
+        run: sudo apt-get update && sudo apt-get install -y dash
+
+      - name: Check the tag matches module.prop and update.json
+        run: |
+          version="$(sed -n 's/^version=//p' module/module.prop)"
+          test "$version" = "$GITHUB_REF_NAME"
+          grep -q "\"version\": \"$version\"" update.json
+
+      - name: Build the zip
+        run: |
+          zip_path="$(bash scripts/package.sh)"
+          echo "ZIP_PATH=$zip_path" >> "$GITHUB_ENV"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha="$(sha256sum "$ZIP_PATH" | cut -d' ' -f1)"
+          # The tag's section of changelog.md: from its heading to the next one.
+          awk -v tag="## $GITHUB_REF_NAME" \
+            '$0 == tag { found = 1; next } found && /^## / { exit } found { print }' \
+            changelog.md > notes.md
+          test -s notes.md
+          printf '\nSHA-256 of %s:\n\n```\n%s\n```\n' "${ZIP_PATH##*/}" "$sha" >> notes.md
+          gh release create "$GITHUB_REF_NAME" "$ZIP_PATH" --title "NoEmulator $GITHUB_REF_NAME" --notes-file notes.md

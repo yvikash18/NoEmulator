@@ -1,0 +1,12 @@
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+out/
+build/
+*.apk
+
+# Built at install time by customize.sh from the device's own HAL, never committed.
+module/system/
+module/vendor/
