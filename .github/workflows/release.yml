@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   release:
@@ -46,3 +47,8 @@ jobs:
           test -s notes.md
           printf '\nSHA-256 of %s:\n\n```\n%s\n```\n' "${ZIP_PATH##*/}" "$sha" >> notes.md
           gh release create "$GITHUB_REF_NAME" "$ZIP_PATH" --title "NoEmulator $GITHUB_REF_NAME" --notes-file notes.md
+
+      - name: Announce on Telegram
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run telegram.yml -R "$GITHUB_REPOSITORY" -f tag="$GITHUB_REF_NAME"
