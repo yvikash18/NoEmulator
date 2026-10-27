@@ -4,6 +4,15 @@
 the tg markers is the Telegram summary. Use absolute links: the notes are read on
 the release page. -->
 
+## v0.7.1
+
+<!--tg-->
+Architecture-aware release packaging for x86_64 and arm64.
+<!--/tg-->
+
+- Bumped the module version and update metadata to v0.7.1.
+- Supports x86_64 through `susfs4ksu-lkm-x64` and arm64 through `susfs4ksu-lkm`.
+
 ## v0.7.0
 
 <!--tg-->
