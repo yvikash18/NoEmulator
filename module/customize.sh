@@ -158,7 +158,7 @@ install_redirect_libraries() {
             *) continue ;;
         esac
         [ -f "$redirect_target" ] || {
-            ui_print "- No $redirect_target on this image; its redirect will be skipped"
+            ui_print "- No $redirect_target on this $NOEMULATOR_ARCH image; its redirect will be skipped"
             continue
         }
 
@@ -171,15 +171,21 @@ install_redirect_libraries() {
 
 ui_print "- NoEmulator $(grep_prop version "$MODPATH/module.prop")"
 
-if [ "$ARCH" != "x64" ]; then
-    abort_with "This build is x86_64 only. Detected architecture: $ARCH"
+. "$MODPATH/lib/arch_support.sh"
+
+NOEMULATOR_ARCH=$(noemulator_detect_arch)
+NOEMULATOR_SUSFS_MODULE=$(noemulator_susfs_module_id "$NOEMULATOR_ARCH" 2>/dev/null || :)
+NOEMULATOR_SUSFS_PREREQ=$(noemulator_susfs_prerequisite "$NOEMULATOR_ARCH" 2>/dev/null || :)
+
+if [ -z "$NOEMULATOR_SUSFS_MODULE" ] || [ -z "$NOEMULATOR_SUSFS_PREREQ" ]; then
+    abort_with "Unsupported architecture: ${ARCH:-$NOEMULATOR_ARCH}. NoEmulator supports x86_64 and arm64."
 fi
 
 # The kernel module creates these nodes when it loads. Their presence is the only
 # check that does not depend on the prerequisite's CLI, which it publishes later in
 # its own service.sh.
 if [ ! -e /proc/susfs_path ]; then
-    abort_with "susfs4ksu-lkm-x64 is not loaded. Install it first, reboot, then install NoEmulator."
+    abort_with "$NOEMULATOR_SUSFS_PREREQ is not loaded. Install it first, reboot, then install NoEmulator."
 fi
 
 ui_print "- susfs kernel module present"
@@ -188,10 +194,10 @@ ui_print "- susfs kernel module present"
 # build still works, with "Umount modules" off per detector app, so this warns
 # rather than aborts. The version is read from the loader module's own
 # module.prop; a kernel module loaded some other way has none, and is not judged.
-NOEMULATOR_SUSFS_PROP=/data/adb/modules/susfs_lkm_x64/module.prop
+NOEMULATOR_SUSFS_PROP=/data/adb/modules/$NOEMULATOR_SUSFS_MODULE/module.prop
 if [ -f "$NOEMULATOR_SUSFS_PROP" ] &&
     [ "$(grep_prop versionCode "$NOEMULATOR_SUSFS_PROP")" -lt 7 ] 2>/dev/null; then
-    ui_print "! susfs4ksu-lkm-x64 $(grep_prop version "$NOEMULATOR_SUSFS_PROP") is older than v0.0.7."
+    ui_print "! $NOEMULATOR_SUSFS_PREREQ $(grep_prop version "$NOEMULATOR_SUSFS_PROP") is older than v0.0.7."
     ui_print "  Redirects then hide nothing from apps with \"Umount modules\" on."
     ui_print "  Update it, or turn \"Umount modules\" off for each detector app."
 fi
@@ -209,7 +215,7 @@ else
     ui_print "  See the README."
 fi
 
-ui_print "- Known limits: uname still reports x86_64, root is not hidden, and"
+ui_print "- Known limits: uname still reports the emulator architecture, root is not hidden, and"
 ui_print "  ARM-only apps lose their native libraries unless you keep the native"
 ui_print "  bridge. See the README."
 
@@ -229,6 +235,7 @@ set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/post-mount.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/lib/generate_rules.sh" 0 0 0755
+set_perm "$MODPATH/lib/arch_support.sh" 0 0 0755
 
 : > "$NOEMULATOR_STAGED_LABELS"
 install_vulkan_hal

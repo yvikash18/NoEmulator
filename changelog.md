@@ -20,3 +20,14 @@ SUSFS kernel rules instead of hooks. Needs KernelSU-Next and susfs4ksu-lkm-x64 v
 - The module card shows `✅ Working.` or `❌ Needs attention:` after each boot.
 - Bug reports: **Action** or the Log page saves a redacted report to `/sdcard/Download`.
 - Requires susfs4ksu-lkm-x64 v0.0.7 or later. Known limits: [LIMITATIONS.md](https://github.com/ymuuuu/NoEmulator/blob/main/LIMITATIONS.md).
+
+## Unreleased (fork)
+
+- Added architecture-aware SUSFS prerequisite and loader selection:
+  - x86_64 keeps `susfs4ksu-lkm-x64` / `susfs_lkm_x64`
+  - arm64 uses `susfs4ksu-lkm` / `susfs_lkm`
+- Installer/runtime now abort unsupported architectures explicitly and log selected
+  loader paths when susfs is missing.
+- Artifact application now logs architecture in skipped redirect/library messages so
+  arm64 path differences are explicit.
+- x86_64 remains the only architecture measured end to end so far in this fork.

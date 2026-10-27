@@ -27,18 +27,27 @@ fi
 : > "$BOOT_MARKER"
 
 # KernelSU runs each module's post-fs-data.sh in directory order, unsorted and one
-# at a time (ksud module.rs, foreach_module), so susfs_lkm_x64's loader may not
+# at a time (ksud module.rs, foreach_module), so the selected susfs_lkm loader may not
 # have run yet. Measured 2026-10-20: after a reinstall of that module, this script
 # ran first and applied nothing. Its loader is safe to run early: it does nothing
 # when susfs is already up, and honours its own disable and remove flags.
-SUSFS_LOADER=/data/adb/modules/susfs_lkm_x64/post-fs-data.sh
+. "$MODDIR/lib/arch_support.sh"
+NOEMULATOR_ARCH=$(noemulator_detect_arch)
+NOEMULATOR_SUSFS_MODULE=$(noemulator_susfs_module_id "$NOEMULATOR_ARCH" 2>/dev/null || :)
+
+if [ -z "$NOEMULATOR_SUSFS_MODULE" ]; then
+    echo "unsupported architecture: ${ARCH:-$NOEMULATOR_ARCH}; no rules applied"
+    exit 1
+fi
+
+SUSFS_LOADER=/data/adb/modules/$NOEMULATOR_SUSFS_MODULE/post-fs-data.sh
 if [ ! -e /proc/susfs_path ] && [ -f "$SUSFS_LOADER" ]; then
     echo "susfs not loaded yet; running its loader first"
     sh "$SUSFS_LOADER"
 fi
 
 if [ ! -e /proc/susfs_path ]; then
-    echo "susfs not loaded; nothing applied"
+    echo "susfs not loaded from $SUSFS_LOADER; nothing applied"
     exit 1
 fi
 
