@@ -25,6 +25,9 @@ MODDIR=${0%/*}
 exec >>"$MODDIR/apply.log" 2>&1
 echo "NoEmulator redirects $(date -u) uptime=$(cut -d' ' -f1 /proc/uptime)"
 
+. "$MODDIR/lib/arch_support.sh"
+NOEMULATOR_ARCH=$(noemulator_detect_arch)
+
 SUSFS_REDIRECT_NODE=/proc/susfs_open_redirect
 
 # stat is called as toybox explicitly. At this stage the shell resolves `stat` to
@@ -53,7 +56,7 @@ noemulator_redirect() {
     redirect_scheme="$3"
 
     if [ ! -e "$redirect_target" ]; then
-        echo "redirect: no target $redirect_target; skipped"
+        echo "redirect: no target $redirect_target on $NOEMULATOR_ARCH; skipped"
         return 0
     fi
 
@@ -62,7 +65,7 @@ noemulator_redirect() {
     fi
 
     if [ ! -e "$redirect_replacement" ]; then
-        echo "redirect: no replacement $redirect_replacement; skipped"
+        echo "redirect: no replacement $redirect_replacement on $NOEMULATOR_ARCH; skipped"
         return 0
     fi
 

@@ -2,10 +2,11 @@
 
 Hides Android emulator artifacts from apps, using kernel rules rather than hooks.
 
-**Status: early, but measured end to end.** Tested on one reference device, a rooted
-Android 16 Pixel 9 x86_64 AVD (Android Studio emulator). It depends on the requirements
-below, and some apps need a per-app setting. Read [LIMITATIONS.md](LIMITATIONS.md) before
-installing.
+**Status: early, but measured end to end on x86_64.** Tested on one reference device,
+a rooted Android 16 Pixel 9 x86_64 AVD (Android Studio emulator). arm64 support uses
+architecture-aware SUSFS prerequisite/loader selection, but has not yet been measured
+end to end in this fork. It depends on the requirements below, and some apps need a
+per-app setting. Read [LIMITATIONS.md](LIMITATIONS.md) before installing.
 
 ## What it does
 
@@ -33,15 +34,17 @@ is nothing to compare. Nothing on disk is edited, so there is no edit mark to fi
 
 ## Requirements
 
-- **[susfs4ksu-lkm-x64](https://github.com/ymuuuu/susfs4ksu-lkm-x64) v0.0.7 or later installed and loaded.** NoEmulator does not bundle it and refuses to install without it. 
-- **x86_64.** The install aborts on other architectures.
+- **SUSFS prerequisite for your emulator architecture, installed and loaded (v0.0.7 or later):**
+  - x86_64: **[susfs4ksu-lkm-x64](https://github.com/ymuuuu/susfs4ksu-lkm-x64)**
+  - arm64: **[susfs4ksu-lkm](https://github.com/inforcqb/susfs4ksu-lkm)**
+- **x86_64 or arm64.** The install aborts on unsupported architectures.
 - **KernelSU-Next**, which loads the susfs kernel module.
 - **[NoMount](https://github.com/maxsteeel/nomount), recommended.**
 
 ## What it does not hide
 
-See [LIMITATIONS.md](LIMITATIONS.md): the GL renderer until you name the app, the x86_64
-hardware, the ARM translator when ARM apps are on, and a few more.
+See [LIMITATIONS.md](LIMITATIONS.md): the GL renderer until you name the app, the emulator
+hardware architecture, the ARM translator when ARM apps are on, and a few more.
 
 ## Layout
 

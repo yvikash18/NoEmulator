@@ -514,6 +514,26 @@ check 'the user config lives under /data/adb/, outside the module directory' 'ye
 
 # --- native_bridge keep (issue #62) -------------------------------------------
 
+check 'arch helper maps x86_64 and x64 to x64' 'x64 x64' \
+    "$(. "$REPO/module/lib/arch_support.sh"; echo "$(noemulator_normalize_arch x86_64) $(noemulator_normalize_arch x64)")"
+
+check 'arch helper maps arm64 and aarch64 to arm64' 'arm64 arm64' \
+    "$(. "$REPO/module/lib/arch_support.sh"; echo "$(noemulator_normalize_arch arm64) $(noemulator_normalize_arch aarch64)")"
+
+check 'arch helper maps supported arches to the right susfs module ids' \
+    'susfs_lkm_x64 susfs_lkm' \
+    "$(. "$REPO/module/lib/arch_support.sh"; echo "$(noemulator_susfs_module_id x64) $(noemulator_susfs_module_id arm64)")"
+
+check 'arch helper maps supported arches to the right susfs prerequisite names' \
+    'susfs4ksu-lkm-x64 susfs4ksu-lkm' \
+    "$(. "$REPO/module/lib/arch_support.sh"; echo "$(noemulator_susfs_prerequisite x64) $(noemulator_susfs_prerequisite arm64)")"
+
+check 'the installer sources the shared architecture helper' '1' \
+    "$(grep -c '^\. "\$MODPATH/lib/arch_support.sh"$' "$REPO/module/customize.sh")"
+
+check 'the installer builds the susfs module.prop path from the selected module id' '1' \
+    "$(grep -c '^NOEMULATOR_SUSFS_PROP=/data/adb/modules/\$NOEMULATOR_SUSFS_MODULE/module.prop$' "$REPO/module/customize.sh")"
+
 native_bridge_deletes='/data/adb/ksu/bin/resetprop -d ro.dalvik.vm.native.bridge
 /data/adb/ksu/bin/resetprop -d ro.enable.native.bridge.exec'
 
@@ -541,12 +561,24 @@ for bad_keep in 'native_bridge hide' 'native_bridge Keep' 'native_bridge keep no
 done
 
 # Regression, 2026-10-20: KernelSU ran this module's post-fs-data before
-# susfs_lkm_x64's, so every early rule was skipped. The loader must be asked
+# the susfs loader module's, so every early rule was skipped. The loader must be asked
 # first, and before the check that gives up.
 check 'post-fs-data runs the susfs loader before giving up on susfs' 'yes' \
     "$(loader=$(grep -n 'sh "\$SUSFS_LOADER"' "$REPO/module/post-fs-data.sh" | cut -d: -f1)
-       giveup=$(grep -n 'susfs not loaded; nothing applied' "$REPO/module/post-fs-data.sh" | cut -d: -f1)
+       giveup=$(grep -n 'susfs not loaded from \$SUSFS_LOADER; nothing applied' "$REPO/module/post-fs-data.sh" | cut -d: -f1)
        [ -n "$loader" ] && [ -n "$giveup" ] && [ "$loader" -lt "$giveup" ] && echo yes)"
+
+check 'post-fs-data builds the loader path from the selected susfs module id' '1' \
+    "$(grep -c '^SUSFS_LOADER=/data/adb/modules/\$NOEMULATOR_SUSFS_MODULE/post-fs-data.sh$' "$REPO/module/post-fs-data.sh")"
+
+check 'post-fs-data logs the selected loader path when susfs is missing' '1' \
+    "$(grep -c '^    echo "susfs not loaded from \$SUSFS_LOADER; nothing applied"$' "$REPO/module/post-fs-data.sh")"
+
+check 'post-mount skip logs include the architecture' '2' \
+    "$(grep -E -c '^        echo "redirect: no (target|replacement) .* on \$NOEMULATOR_ARCH; skipped"$' "$REPO/module/post-mount.sh")"
+
+check 'customize logs architecture-specific skipped redirect-library installs' '1' \
+    "$(grep -c '^            ui_print "- No \$redirect_target on this \$NOEMULATOR_ARCH image; its redirect will be skipped"$' "$REPO/module/customize.sh")"
 
 # --- kstat_inode (issue #78) -------------------------------------------------
 
